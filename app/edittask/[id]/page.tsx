@@ -76,7 +76,7 @@ export default function Page() {
         return;
       } else {
         // get url ของรูปภาพที่อัปโหลด
-        const { data, error } = supabase.storage.from("task_bk").getPublicUrl(new_image_file_name);
+        const { data } = supabase.storage.from("task_bk").getPublicUrl(new_image_file_name);
         image_url = data.publicUrl;
       }
     }
