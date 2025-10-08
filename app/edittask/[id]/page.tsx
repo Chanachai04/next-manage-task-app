@@ -1,20 +1,45 @@
 "use client";
 
 import Image from "next/image";
-import Task from "./../../assets/task.png";
-import { supabase } from "@/lib/supabaseClient";
+import Task from "@/assets/task.png";
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // เปลี่ยนจาก "next/router" เป็น "next/navigation"
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter, useParams } from "next/navigation"; // เปลี่ยนจาก "next/router" เป็น "next/navigation"
 
 export default function Page() {
+  const router = useRouter();
+  const id = useParams().id; // ดึง id จากพารามิเตอร์ของ URL
+
   const [title, setTitle] = useState<string>("");
   const [detail, setDetail] = useState<string>("");
   const [is_completed, setIsCompleted] = useState<boolean>(false);
   const [image_file, setImageFile] = useState<File | null>(null);
   const [preview_file, setPreviewFile] = useState<string>("");
+  const [old_image_file, setOldImageFile] = useState<string>("");
 
-  const router = useRouter();
+  // ดึงข้อมูลงานเก่าจากฐานข้อมูลมาแสดง ตาม id ที่ส่งมา
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data, error } = await supabase.from("task_tb").select("*").eq("id", id).single();
+
+      if (error) {
+        alert("พบปัญหาในการดึงข้อมูลงานเก่า");
+        console.log(error.message);
+        return;
+      }
+
+      // กรณีดึงข้อมูลสำเร็จ ให้นำข้อมูลมาแสดงในฟอร์ม
+      if (data) {
+        setTitle(data.title);
+        setDetail(data.detail);
+        setIsCompleted(data.is_completed);
+        setPreviewFile(data.image_url);
+        setOldImageFile(data.image_url);
+      }
+    };
+    fetchData();
+  }, [id]);
 
   const handleSelectImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -24,11 +49,23 @@ export default function Page() {
     }
   };
 
-  const handleUploadAndSave = async (e: React.FormEvent<HTMLFormElement>) => {
+  // บันทึกและแก้ไขข้อมูลฐานข้อมูลที่ supabase
+  const handleUploadAndUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // บันทึกรูปภาพไปยัง Supabase Storage
-    let image_url = "";
+    // อัพเดตรูปภาพใหม่ไปยัง Supabase Storage
+    let image_url = preview_file || "";
     if (image_file) {
+      // ลบรูปภาพเก่าออกจาก Supabase Storage
+      if (old_image_file !== "") {
+        const image_name = old_image_file.split("/").pop(); // ดึงชื่อไฟล์จาก URL
+
+        const { data, error } = await supabase.storage.from("task_bk").remove([image_name as string]); // ลบรูปภาพ
+        if (error) {
+          alert("พบปัญหาในการลบรูปภาพ ออกจาก Storage");
+          console.log(error.message);
+          return;
+        }
+      }
       const new_image_file_name = `${Date.now()}-${image_file.name}`;
 
       // อัปโหลดรูปภาพไปยัง Supabase Storage
@@ -43,21 +80,24 @@ export default function Page() {
         image_url = data.publicUrl;
       }
     }
-
-    // บันทึกข้อมูลงานลงในตาราง tasks
-    const { data, error } = await supabase.from("task_tb").insert({
-      title: title,
-      detail: detail,
-      is_completed: is_completed,
-      image_url: image_url,
-    });
+    // แก้ไขข้อมูลในตาราง task_tb
+    const { data, error } = await supabase
+      .from("task_tb")
+      .update({
+        title: title,
+        detail: detail,
+        is_completed: is_completed,
+        image_url: image_url,
+        update_at: new Date().toISOString,
+      })
+      .eq("id", id);
 
     if (error) {
-      alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+      alert("เกิดข้อผิดพลาดในการบันทึกการแก้ไขข้อมูล");
       console.log(error.message);
       return;
     } else {
-      alert("บันทึกข้อมูลเรียบร้อย");
+      alert("บันทึกแก้ไขข้อมูลเรียบร้อย");
       setTitle("");
       setDetail("");
       setIsCompleted(false);
@@ -77,8 +117,8 @@ export default function Page() {
       </div>
 
       <div className="mt-10 flex flex-col border border-gray-300 p-5 rounded-2xl">
-        <h1 className="text-center text-xl font-bold">เพิ่มงานใหม่</h1>
-        <form onSubmit={handleUploadAndSave}>
+        <h1 className="text-center text-xl font-bold">แก้ไขงานเก่า</h1>
+        <form onSubmit={handleUploadAndUpdate}>
           <div className="flex flex-col mt-5">
             <label className="text-lg font-bold" htmlFor="title">
               งานที่ทำ
@@ -136,7 +176,7 @@ export default function Page() {
           </div>
           <div className="flex flex-col mt-5">
             <button type="submit" className="bg-green-500 rounded-lg p-2 text-white">
-              บันทึกเพิ่มงาน
+              บันทึกแก้ไขงาน
             </button>
           </div>
         </form>
