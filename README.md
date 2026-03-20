@@ -25,18 +25,18 @@
 
 ### 🖥️ หน้าภาพรวม (Dashboard)
 <div align="center">
-  <img width="650" alt="Dashboard" src="https://github.com/user-attachments/assets/5e728027-ddfb-4bd5-afda-7a346db6338d" />
+  <img width="650" alt="Dashboard" src="https://github.com/user-attachments/assets/390338ae-78b3-4de0-83bb-d94dc552fda5" />
 </div>
 
 ### 📝 หน้าสร้างงาน (Add Task)
 <div align="center">
-  <img width="650" alt="Add Task" src="https://github.com/user-attachments/assets/d2ddb6f2-e860-4710-8a12-66acc93c1446" />
+  <img width="650" alt="Add Task" src="https://github.com/user-attachments/assets/872b4320-842a-4330-8ebe-8a49d9c3e14d" />
 </div>
 
 ### 🔐 หน้าเข้าสู่ระบบและสมัครสมาชิก
 <div align="center" style="display: flex; justify-content: center; gap: 10px;">
+  <img width="350" alt="Login" src="https://github.com/user-attachments/assets/5e728027-ddfb-4bd5-afda-7a346db6338d" />
   <img width="350" alt="Login" src="https://github.com/user-attachments/assets/f1eedb4b-43b2-459b-bab1-66573138b53e" />
-  <img width="350" alt="Register" src="https://github.com/user-attachments/assets/b179a288-adc9-47ff-823e-93ed3dae7e2d" />
 </div>
 
 ### 🔍 ภาพหน้าจออื่นๆ
@@ -44,11 +44,9 @@
 <summary><b>คลิกเพื่อดูภาพเพิ่มเติม</b></summary>
 <br>
 <div align="center">
-  <img width="600" alt="View 1" src="https://github.com/user-attachments/assets/390338ae-78b3-4de0-83bb-d94dc552fda5" />
-  <br><br>
-  <img width="600" alt="View 2" src="https://github.com/user-attachments/assets/872b4320-842a-4330-8ebe-8a49d9c3e14d" />
-  <br><br>
   <img width="600" alt="View 3" src="https://github.com/user-attachments/assets/814a9c4a-a8ab-44e5-a899-52b24388ea39" />
+  <br><br>
+  <img width="600" alt="View 1" src="https://github.com/user-attachments/assets/b179a288-adc9-47ff-823e-93ed3dae7e2d" />
 </div>
 </details>
 
