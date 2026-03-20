@@ -21,10 +21,18 @@ export default function Page() {
   // ดึงข้อมูลงานเก่าจากฐานข้อมูลมาแสดง ตาม id ที่ส่งมา
   useEffect(() => {
     const fetchData = async () => {
+      const userData = localStorage.getItem("user");
+      if (!userData) {
+        router.push("/login");
+        return;
+      }
+      const user = JSON.parse(userData);
+
       const { data, error } = await supabase
         .from("task_tb")
         .select("*")
         .eq("id", id)
+        .eq("user_id", user.id)
         .single();
 
       if (error) {
@@ -43,7 +51,7 @@ export default function Page() {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, router]);
 
   const handleSelectImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -63,7 +71,7 @@ export default function Page() {
       if (old_image_file !== "") {
         const image_name = old_image_file.split("/").pop(); // ดึงชื่อไฟล์จาก URL
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from("task_bk")
           .remove([image_name as string]); // ลบรูปภาพ
         if (error) {
@@ -75,7 +83,7 @@ export default function Page() {
       const new_image_file_name = `${Date.now()}-${image_file.name}`;
 
       // อัปโหลดรูปภาพไปยัง Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from("task_bk")
         .upload(new_image_file_name, image_file);
       if (error) {
@@ -90,17 +98,26 @@ export default function Page() {
         image_url = data.publicUrl;
       }
     }
+
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      router.push("/login");
+      return;
+    }
+    const user = JSON.parse(userData);
+
     // แก้ไขข้อมูลในตาราง task_tb
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("task_tb")
       .update({
         title: title,
         detail: detail,
         is_completed: is_completed,
         image_url: image_url,
-        update_at: new Date().toISOString,
+        update_at: new Date().toISOString(),
       })
-      .eq("id", id);
+      .eq("id", id)
+      .eq("user_id", user.id);
 
     if (error) {
       alert("เกิดข้อผิดพลาดในการบันทึกการแก้ไขข้อมูล");

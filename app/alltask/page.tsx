@@ -4,6 +4,7 @@ import Task from "./../../assets/task.png";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
 type Task = {
   id: string;
@@ -15,13 +16,22 @@ type Task = {
   update_at: string;
 };
 export default function Page() {
+  const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   // ดึงข้อมูลจาก Supabase มาแสดง
   useEffect(() => {
     const fetchTasks = async () => {
+      const userData = localStorage.getItem("user");
+      if (!userData) {
+        router.push("/login");
+        return;
+      }
+      const user = JSON.parse(userData);
+
       const { data, error } = await supabase
         .from("task_tb")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       if (error) {
         alert("พบปัญหาในการใช้งาน ");
@@ -33,7 +43,7 @@ export default function Page() {
     };
 
     fetchTasks();
-  }, []);
+  }, [router]);
   // ฟังก์ชันลบงาน
   const handleDeleteTaskClick = async (id: string, image_url: string) => {
     if (confirm("คุณต้องการลบงานนี้ใช่หรือไม่")) {
@@ -41,7 +51,7 @@ export default function Page() {
       if (image_url !== "") {
         const image_name = image_url.split("/").pop(); // ดึงชื่อไฟล์จาก URL
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from("task_bk")
           .remove([image_name as string]); // ลบรูปภาพ
         if (error) {
@@ -52,7 +62,7 @@ export default function Page() {
       }
 
       // ลบข้อมูลออกจากตาราง task_tb
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("task_tb")
         .delete()
         .eq("id", id);

@@ -8,7 +8,7 @@ const prompt = Prompt({
 });
 
 export const metadata: Metadata = {
-  title: "Task App by NinniN SAU",
+  title: "Task App",
   description: "บันทึกงานที่ต้องทำ",
 };
 

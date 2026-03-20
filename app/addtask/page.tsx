@@ -4,7 +4,7 @@ import Image from "next/image";
 import Task from "./../../assets/task.png";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // เปลี่ยนจาก "next/router" เป็น "next/navigation"
 
 export default function Page() {
@@ -15,6 +15,12 @@ export default function Page() {
   const [preview_file, setPreviewFile] = useState<string>("");
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (!localStorage.getItem("user")) {
+      router.push("/login");
+    }
+  }, [router]);
 
   const handleSelectImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -32,7 +38,7 @@ export default function Page() {
       const new_image_file_name = `${Date.now()}-${image_file.name}`;
 
       // อัปโหลดรูปภาพไปยัง Supabase Storage
-      const { data, error } = await supabase.storage.from("task_bk").upload(new_image_file_name, image_file);
+      const { error } = await supabase.storage.from("task_bk").upload(new_image_file_name, image_file);
       if (error) {
         alert("เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ");
         console.log(error.message);
@@ -45,11 +51,19 @@ export default function Page() {
     }
 
     // บันทึกข้อมูลงานลงในตาราง tasks
-    const { data, error } = await supabase.from("task_tb").insert({
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      router.push("/login");
+      return;
+    }
+    const user = JSON.parse(userData);
+
+    const { error } = await supabase.from("task_tb").insert({
       title: title,
       detail: detail,
       is_completed: is_completed,
       image_url: image_url,
+      user_id: user.id,
     });
 
     if (error) {
